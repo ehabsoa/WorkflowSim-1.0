@@ -16,6 +16,7 @@
 package org.workflowsim.scheduling;
 
 import java.util.Iterator;
+
 import org.cloudbus.cloudsim.Cloudlet;
 import org.workflowsim.CondorVM;
 import org.workflowsim.WorkflowSimTags;
@@ -32,12 +33,17 @@ public class FCFSSchedulingAlgorithm extends BaseSchedulingAlgorithm {
     /**
      * The main function
      */
-    @Override
+    
+	@Override
     public void run() {
 
-
+		
+		System.out.println("Size: "+getCloudletList().size());
+		
         for (Iterator it = getCloudletList().iterator(); it.hasNext();) {
             Cloudlet cloudlet = (Cloudlet) it.next();
+            System.out.println("Cloudletid: "+cloudlet.getCloudletId());
+         
             boolean stillHasVm = false;
             for (Iterator itc = getVmList().iterator(); itc.hasNext();) {
 
@@ -56,6 +62,7 @@ public class FCFSSchedulingAlgorithm extends BaseSchedulingAlgorithm {
             }
 
         }
+        System.out.println("-------------------");
     }
 
 

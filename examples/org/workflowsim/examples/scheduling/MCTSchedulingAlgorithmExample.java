@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
@@ -102,7 +103,7 @@ public class MCTSchedulingAlgorithmExample {
             /**
              * Should change this based on real physical path
              */
-            String daxPath = "/Users/chenweiwei/Work/WorkflowSim-1.0/config/dax/Montage_100.xml";
+            String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/Montage_25.xml";
             
             File daxFile = new File(daxPath);
             if(!daxFile.exists()){

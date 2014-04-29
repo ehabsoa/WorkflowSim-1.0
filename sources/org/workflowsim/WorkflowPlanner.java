@@ -17,6 +17,7 @@ package org.workflowsim;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEntity;
@@ -24,7 +25,9 @@ import org.cloudbus.cloudsim.core.SimEvent;
 import org.workflowsim.planning.BasePlanningAlgorithm;
 import org.workflowsim.planning.DHEFTPlanningAlgorithm;
 import org.workflowsim.planning.HEFTPlanningAlgorithm;
+import org.workflowsim.planning.PSOPlanningAlgorithm;
 import org.workflowsim.planning.RandomPlanningAlgorithm;
+import org.workflowsim.planning.RoundRobinPlanningAlgorithm;
 import org.workflowsim.utils.Parameters;
 import org.workflowsim.utils.Parameters.PlanningAlgorithm;
 
@@ -139,7 +142,7 @@ public class WorkflowPlanner extends SimEntity {
                 setTaskList(getWorkflowParser().getTaskList());
 
                 processPlanning();
-
+                
                 processImpactFactors(getTaskList());
                 sendNow(getClusteringEngineId(), WorkflowSimTags.JOB_SUBMIT, getTaskList());
                 break;
@@ -161,7 +164,8 @@ public class WorkflowPlanner extends SimEntity {
         
         planner.setTaskList(getTaskList());
         planner.setVmList(getWorkflowEngine().getAllVmList());
-
+        
+        
         try {
             planner.run();
         } catch (Exception e) {
@@ -195,6 +199,12 @@ public class WorkflowPlanner extends SimEntity {
             case DHEFT:
                 planner = new DHEFTPlanningAlgorithm();
                 break;
+            case ROBINROUND:
+            	planner = new RoundRobinPlanningAlgorithm();
+            	break;
+            case PSO:
+            	planner = new PSOPlanningAlgorithm();
+            	break;
             default:
                 planner = null;
                 break;

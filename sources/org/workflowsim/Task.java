@@ -292,4 +292,11 @@ public class Task extends Cloudlet {
     public double getImpact() {
         return this.impact;
     }
+
+	@Override
+	public String toString() {
+		return "Task[" + getCloudletId() + "]";
+	}
+    
+    
 }

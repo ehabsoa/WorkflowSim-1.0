@@ -17,6 +17,7 @@ package org.workflowsim.scheduling;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Log;
 import org.workflowsim.CondorVM;
@@ -51,9 +52,12 @@ public class StaticSchedulingAlgorithm extends BaseSchedulingAlgorithm {
         }
         
         int size = getCloudletList().size();
+        
+      //  System.out.println("Size: "+getCloudletList().size());
 
         for(int i = 0; i < size; i++) {
             Cloudlet cloudlet = (Cloudlet) getCloudletList().get(i);
+          //  System.out.println("Cloudletid: "+cloudlet.getCloudletId());
             /**
              * Make sure cloudlet is matched to a VM. It should be done in the
              * Workflow Planner. If not, throws an exception because StaticSchedulingAlgorithm
@@ -80,7 +84,7 @@ public class StaticSchedulingAlgorithm extends BaseSchedulingAlgorithm {
 
         }
 
-
+       // System.out.println("-------------------");
 
 
     }

@@ -130,6 +130,7 @@ public class DatacenterExtended extends Datacenter {
             if (cl.getClassType() != 1) {
                 fileTransferTime = processDataStageIn(task.getFileList(), cl);
             }
+            System.out.println("Task: "+task.getCloudletId() + " trasfer: "+fileTransferTime);
 
             Host host = getVmAllocationPolicy().getHost(vmId, userId);
             Vm vm = host.getVm(vmId, userId);

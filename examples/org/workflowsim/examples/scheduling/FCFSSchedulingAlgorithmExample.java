@@ -77,6 +77,7 @@ public class FCFSSchedulingAlgorithmExample {
             double ratio = 1.0;
             vm[i] = new CondorVM(i, userId, mips * ratio, pesNumber, ram, bw, size, vmm, new CloudletSchedulerSpaceShared());
             list.add(vm[i]);
+            vm[i].setPrice(Math.random());
         }
 
         return list;
@@ -102,7 +103,7 @@ public class FCFSSchedulingAlgorithmExample {
             /**
              * Should change this based on real physical path
              */
-            String daxPath = "/Users/chenweiwei/Work/WorkflowSim-1.0/config/dax/Montage_100.xml";
+            String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/Montage_25.xml";
             
             File daxFile = new File(daxPath);
             if(!daxFile.exists()){
@@ -120,8 +121,8 @@ public class FCFSSchedulingAlgorithmExample {
              * Since we are using HEFT planning algorithm, the scheduling algorithm should be static 
              * such that the scheduler would not override the result of the planner
              */
-            Parameters.SchedulingAlgorithm sch_method = Parameters.SchedulingAlgorithm.FCFS;
-            Parameters.PlanningAlgorithm pln_method = Parameters.PlanningAlgorithm.INVALID;
+            Parameters.SchedulingAlgorithm sch_method = Parameters.SchedulingAlgorithm.STATIC;
+            Parameters.PlanningAlgorithm pln_method = Parameters.PlanningAlgorithm.PSO;
             ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.LOCAL;
 
             /**
@@ -150,7 +151,7 @@ public class FCFSSchedulingAlgorithmExample {
             // before creating any entities.
             int num_user = 1;   // number of grid users
             Calendar calendar = Calendar.getInstance();
-            boolean trace_flag = false;  // mean trace events
+            boolean trace_flag = true;  // mean trace events
 
             // Initialize the CloudSim library
             CloudSim.init(num_user, calendar, trace_flag);
