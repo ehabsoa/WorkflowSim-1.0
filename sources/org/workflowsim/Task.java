@@ -301,6 +301,7 @@ public class Task extends Cloudlet {
     public double getImpact() {
         return this.impact;
     }
+<<<<<<< HEAD
     
     /**
      * Sets the finish time of the task (different to the one used in Cloudlet)
@@ -342,4 +343,13 @@ public class Task extends Cloudlet {
         cost += costPerBw * fileSize;
         return cost;
     }
+
+
+	@Override
+	public String toString() {
+		return "Task[" + getCloudletId() + "]";
+	}
+    
+    
+
 }
