@@ -21,87 +21,89 @@ import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Vm;
 
 /**
- * The base scheduler has implemented the basic features. Every other scheduling method
- * should extend from BaseSchedulingAlgorithm but should not directly use it. 
- *
+ * The base scheduler has implemented the basic features. Every other scheduling
+ * method should extend from BaseSchedulingAlgorithm but should not directly use
+ * it.
+ * 
  * @author Weiwei Chen
  * @since WorkflowSim Toolkit 1.0
  * @date Apr 9, 2013
  */
-public abstract class BaseSchedulingAlgorithm implements SchedulingAlgorithmInterface {
+public abstract class BaseSchedulingAlgorithm implements
+		SchedulingAlgorithmInterface {
 
-    /**
-     * the job list.
-     */
-    private List<? extends Cloudlet> cloudletList;
-    /**
-     * the vm list.
-     */
-    private List<? extends Vm> vmList;
-    /**
-     * the scheduled job list.
-     */
-    private List< Cloudlet> scheduledList;
+	/**
+	 * the job list.
+	 */
+	private List<? extends Cloudlet> cloudletList;
+	/**
+	 * the vm list.
+	 */
+	private List<? extends Vm> vmList;
+	/**
+	 * the scheduled job list.
+	 */
+	private List<Cloudlet> scheduledList;
 
-    /**
-     * Initialize a BaseSchedulingAlgorithm
-     */
-    public BaseSchedulingAlgorithm() {
-        this.scheduledList = new ArrayList();
-    }
+	/**
+	 * Initialize a BaseSchedulingAlgorithm
+	 */
+	public BaseSchedulingAlgorithm() {
+		this.scheduledList = new ArrayList();
+	}
 
-    /**
-     * Sets the job list.
-     *
-     * @param list
-     */
-    @Override
-    public void setCloudletList(List list) {
-        this.cloudletList = list;
-    }
+	/**
+	 * Sets the job list.
+	 * 
+	 * @param list
+	 */
+	@Override
+	public void setCloudletList(List list) {
+		this.cloudletList = list;
+	}
 
-    /**
-     * Sets the vm list
-     *
-     * @param list
-     */
-    @Override
-    public void setVmList(List list) {
-        this.vmList = new ArrayList(list);
-    }
+	/**
+	 * Sets the vm list
+	 * 
+	 * @param list
+	 */
+	@Override
+	public void setVmList(List list) {
+		this.vmList = new ArrayList(list);
+	}
 
-    /**
-     * Gets the job list.
-     *
-     * @return the job list
-     */
-    @Override
-    public List getCloudletList() {
-        return this.cloudletList;
-    }
+	/**
+	 * Gets the job list.
+	 * 
+	 * @return the job list
+	 */
+	@Override
+	public List getCloudletList() {
+		return this.cloudletList;
+	}
 
-    /**
-     * Gets the vm list
-     *
-     * @return the vm list
-     */
-    @Override
-    public List getVmList() {
-        return this.vmList;
-    }
+	/**
+	 * Gets the vm list
+	 * 
+	 * @return the vm list
+	 */
+	@Override
+	public List getVmList() {
+		return this.vmList;
+	}
 
-    /**
-     * The main function
-     */
-    public abstract void run() throws Exception;
+	/**
+	 * The main function
+	 */
+	public abstract void run() throws Exception;
 
-    /**
-     * Gets the scheduled job list
-     *
-     * @return job list
-     */
-    @Override
-    public List getScheduledList() {
-        return this.scheduledList;
-    }
+	/**
+	 * Gets the scheduled job list
+	 * 
+	 * @return job list
+	 */
+	@Override
+	public List getScheduledList() {
+		return this.scheduledList;
+	}
 }

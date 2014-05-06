@@ -47,6 +47,8 @@ public class PSOSchedulingAlgorithmExample1 extends WorkflowSimBasicExample1 {
 					(long) (bw * ratio), size, vmm,
 					new CloudletSchedulerSpaceShared());
 			list.add(vm[i]);
+			
+			vm[i].setPrice(2.1/i);
 		}
 
 		return list;

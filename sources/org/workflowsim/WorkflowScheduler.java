@@ -283,8 +283,10 @@ public class WorkflowScheduler extends DatacenterBroker {
 		try {
 			scheduler.run();
 		} catch (Exception e) {
-			Log.printLine("Error in configuring scheduler_method");
+			Log.printLine("Error in configuring scheduler_method: "
+					+ e.getMessage());
 			e.printStackTrace();
+
 		}
 
 		List scheduledList = scheduler.getScheduledList();

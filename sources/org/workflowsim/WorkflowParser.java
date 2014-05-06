@@ -202,7 +202,7 @@ public class WorkflowParser {
             Document dom = builder.build(new File(daxPath));
             Element root = dom.getRootElement();
             List list = root.getChildren();
-            int idIndex = 1;
+            int idIndex = 0;
             for (Iterator it = list.iterator(); it.hasNext();) {
                 Element node = (Element) it.next();
                 if (node.getName().toLowerCase().equals("job")) {

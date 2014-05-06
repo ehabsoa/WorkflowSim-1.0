@@ -1,18 +1,16 @@
 package org.workflowsim.scheduling;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Log;
 import org.workflowsim.CondorVM;
 import org.workflowsim.Job;
-import org.workflowsim.Task;
 import org.workflowsim.WorkflowSimTags;
 import org.workflowsim.planning.BasePlanningAlgorithm;
 import org.workflowsim.planning.PSOPlanningAlgorithm;
+import org.workflowsim.utils.Parameters.ClassType;
 
 public class PSOSSchedulingAlgorithm extends BaseSchedulingAlgorithm {
 
@@ -22,12 +20,13 @@ public class PSOSSchedulingAlgorithm extends BaseSchedulingAlgorithm {
 		this.planner = (PSOPlanningAlgorithm) planner;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run() throws Exception {
 
 		if (!getCloudletList().isEmpty()) {
 
-			Map mId2Vm = new HashMap<Integer, CondorVM>();
+			Map<Integer, CondorVM> mId2Vm = new HashMap<Integer, CondorVM>();
 
 			for (int i = 0; i < getVmList().size(); i++) {
 				CondorVM vm = (CondorVM) getVmList().get(i);
@@ -36,7 +35,11 @@ public class PSOSSchedulingAlgorithm extends BaseSchedulingAlgorithm {
 				}
 			}
 
-			planner.doOnline(getCloudletList());
+			if (!getCloudletList().isEmpty()) {
+				Job job = (Job) getCloudletList().get(0);
+				if (job.getClassType() != ClassType.STAGE_IN.value)
+					planner.doOnline(getCloudletList());
+			}
 
 			int size = getCloudletList().size();
 

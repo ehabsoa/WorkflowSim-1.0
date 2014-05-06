@@ -30,10 +30,13 @@ public class PSOPlanningAlgorithm extends BasePlanningAlgorithm {
 
 	private List<Task> mapping;
 
+	private boolean online;
+
 	public PSOPlanningAlgorithm() {
 		TP = new HashMap<Task, Map<CondorVM, Double>>();
 		PP = new HashMap<CondorVM, Map<CondorVM, Double>>();
 		e = new HashMap<Task, Map<Task, Double>>();
+		online = false;
 	}
 
 	@Override
@@ -84,26 +87,38 @@ public class PSOPlanningAlgorithm extends BasePlanningAlgorithm {
 
 	}
 
-	public void doOnline(List<Cloudlet> readyTask) {
-		double bestPosition[] = pso(mapping);
+	public void doOnline(List<Task> readyJob) {
+
+		if (readyJob.isEmpty())
+			return;
+
+		if (!online) {
+			online = true;
+			return;
+		}
+
+		List<Task> readyTask = new ArrayList<Task>();
+		Map<Task, Job> m2j = new HashMap<Task, Job>();
+
+		for (Cloudlet cloudlet : readyJob) {
+			Job job = (Job) cloudlet;
+			for (Task t : job.getTaskList()) {
+				readyTask.add(t);
+				m2j.put(t, job);
+			}
+		}
+
+		double bestPosition[] = pso(readyTask);
+
 		System.out.println("------");
 
-		for (Cloudlet cloudlet : readyTask) {
-			Job job = (Job) cloudlet;
+		for (int d = 0; d < bestPosition.length; d++) {
+			Task t = readyTask.get(d);
+			int vmId = (int) Math.round(bestPosition[d]);
 
-			if (!job.getTaskList().isEmpty()) {
-				Task t = job.getTaskList().get(0);
-
-				for (int d = 0; d < bestPosition.length; d++) {
-					if (t.equals((Task) mapping.get(d))) {
-						System.out.println("Task[" + d + "] => VM["
-								+ Math.round(bestPosition[d]) + "]");
-						t.setVmId(((int) Math.round(bestPosition[d])));
-						job.setVmId(((int) Math.round(bestPosition[d])));
-					}
-				}
-			}
-
+			t.setVmId(vmId);
+			m2j.get(t).setVmId(vmId);
+			System.out.println(t + " => VM[" + vmId + "]");
 		}
 
 	}

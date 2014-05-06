@@ -22,94 +22,99 @@ import org.cloudbus.cloudsim.Datacenter;
 import org.cloudbus.cloudsim.Vm;
 
 /**
- * The base planner has implemented the basic features. Every other planning method
- * should extend from BasePlanningAlgorithm but should not directly use it. 
- *
+ * The base planner has implemented the basic features. Every other planning
+ * method should extend from BasePlanningAlgorithm but should not directly use
+ * it.
+ * 
  * @author Weiwei Chen
  * @since WorkflowSim Toolkit 1.0
  * @date Jun 17, 2013
  */
-public abstract class BasePlanningAlgorithm implements PlanningAlgorithmInterface {
+public abstract class BasePlanningAlgorithm implements
+		PlanningAlgorithmInterface {
 
-    /**
-     * the task list.
-     */
-    private List<? extends Cloudlet> tasktList;
-    /**
-     * the vm list.
-     */
-    private List<? extends Vm> vmList;
+	/**
+	 * the task list.
+	 */
+	private List<? extends Cloudlet> tasktList;
+	/**
+	 * the vm list.
+	 */
+	private List<? extends Vm> vmList;
 
-    /**
-     * the datacenter list
-     */
-    private List<? extends Datacenter> datacenterList;
-    /**
-     * Initialize a BaseScheduler
-     */
-    public BasePlanningAlgorithm() {
-    }
+	/**
+	 * the datacenter list
+	 */
+	private List<? extends Datacenter> datacenterList;
 
-    /**
-     * Sets the job list.
-     *
-     * @param list
-     */
-    @Override
-    public void setTaskList(List list) {
-        this.tasktList = list;
-    }
+	/**
+	 * Initialize a BaseScheduler
+	 */
+	public BasePlanningAlgorithm() {
+	}
 
-    /**
-     * Sets the vm list
-     *
-     * @param list
-     */
-    @Override
-    public void setVmList(List list) {
-        this.vmList = new ArrayList(list);
-    }
+	/**
+	 * Sets the job list.
+	 * 
+	 * @param list
+	 */
+	@Override
+	public void setTaskList(List list) {
+		this.tasktList = list;
+	}
 
-    /**
-     * Gets the task list.
-     *
-     * @return the task list
-     */
-    @Override
-    public List getTaskList() {
-        return this.tasktList;
-    }
+	/**
+	 * Sets the vm list
+	 * 
+	 * @param list
+	 */
+	@Override
+	public void setVmList(List list) {
+		this.vmList = new ArrayList(list);
+	}
 
-    /**
-     * Gets the vm list
-     *
-     * @return the vm list
-     */
-    @Override
-    public List getVmList() {
-        return this.vmList;
-    }
+	/**
+	 * Gets the task list.
+	 * 
+	 * @return the task list
+	 */
+	@Override
+	public List getTaskList() {
+		return this.tasktList;
+	}
 
-    /**
-     * Gets the datacenter list
-     * @return the datacenter list
-     */
-    public List getDatacenterList(){
-        return this.datacenterList;
-    }
-    
-    /**
-     * Sets the datacenter list
-     * @param list the datacenter list
-     */
-    public void setDatacenterList(List list){
-        this.datacenterList = list;
-    }
-    
-    /**
-     * The main function
-     */
-    public abstract void run() throws Exception;
+	/**
+	 * Gets the vm list
+	 * 
+	 * @return the vm list
+	 */
+	@Override
+	public List getVmList() {
+		return this.vmList;
+	}
 
-    
+	/**
+	 * Gets the datacenter list
+	 * 
+	 * @return the datacenter list
+	 */
+	public List<? extends Datacenter> getDatacenterList() {
+		return this.datacenterList;
+	}
+
+	/**
+	 * Sets the datacenter list
+	 * 
+	 * @param list
+	 *            the datacenter list
+	 */
+	public void setDatacenterList(List<? extends Datacenter> list) {
+		this.datacenterList = list;
+	}
+
+	/**
+	 * The main function
+	 */
+	public abstract void run() throws Exception;
+
 }

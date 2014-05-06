@@ -22,80 +22,89 @@ import java.util.List;
  * Job is an extention to Task. It is basically a group of tasks. In
  * WorkflowSim, the ClusteringEngine merges tasks into jobs (group of tasks) and
  * the overall runtime of a job is the sum of the task runtime.
- *
- *
+ * 
+ * 
  * @author Weiwei Chen
  * @since WorkflowSim Toolkit 1.0
  * @date Apr 9, 2013
  */
 public class Job extends Task {
 
-    /*
-     * The list of tasks a job has. It is the only difference between Job and Task. 
-     */
-    private List<Task> taskList;
+	/*
+	 * The list of tasks a job has. It is the only difference between Job and
+	 * Task.
+	 */
+	private List<Task> taskList;
 
-    /**
-     * Allocates a new Job object. The job length should be greater than or
-     * equal to 1.
-     *
-     * @param jobId the unique ID of this job
-     * @param jobLength the length or size (in MI) of this task to be executed
-     * in a PowerDatacenter
-     * @pre jobId >= 0
-     * @pre jobLength >= 0.0
-     * @post $none
-     */
-    public Job(
-            final int jobId,
-            final long jobLength) {
+	/**
+	 * Allocates a new Job object. The job length should be greater than or
+	 * equal to 1.
+	 * 
+	 * @param jobId
+	 *            the unique ID of this job
+	 * @param jobLength
+	 *            the length or size (in MI) of this task to be executed in a
+	 *            PowerDatacenter
+	 * @pre jobId >= 0
+	 * @pre jobLength >= 0.0
+	 * @post $none
+	 */
+	public Job(final int jobId, final long jobLength) {
 
-        super(jobId, jobLength);
-        this.taskList = new ArrayList<Task>();
+		super(jobId, jobLength);
+		this.taskList = new ArrayList<Task>();
 
-    }
+	}
 
-    /**
-     * Gets the list of tasks in this job
-     *
-     * @return the list of the tasks
-     * @pre $none
-     * @post $none
-     */
-    public List<Task> getTaskList() {
-        return this.taskList;
-    }
+	/**
+	 * Gets the list of tasks in this job
+	 * 
+	 * @return the list of the tasks
+	 * @pre $none
+	 * @post $none
+	 */
+	public List<Task> getTaskList() {
+		return this.taskList;
+	}
 
-    /**
-     * Sets the list of the tasks
-     *
-     * @param list, list of the tasks
-     * @return $none
-     */
-    public void setTaskList(List list) {
-        this.taskList = list;
-    }
+	/**
+	 * Sets the list of the tasks
+	 * 
+	 * @param list
+	 *            , list of the tasks
+	 * @return $none
+	 */
+	public void setTaskList(List list) {
+		this.taskList = list;
+	}
 
-    /**
-     * Adds a task list to the existing task list
-     *
-     * @param list, task list to be added
-     * @return $none
-     */
-    public void addTaskList(List list) {
-        this.taskList.addAll(list);
-    }
+	/**
+	 * Adds a task list to the existing task list
+	 * 
+	 * @param list
+	 *            , task list to be added
+	 * @return $none
+	 */
+	public void addTaskList(List list) {
+		this.taskList.addAll(list);
+	}
 
-    /**
-     * Gets the list of the parent tasks and override its super function
-     *
-     * @return the list of the parents
-     * @pre $none
-     * @post $none
-     */
-    @Override
-    public List getParentList() {
+	/**
+	 * Gets the list of the parent tasks and override its super function
+	 * 
+	 * @return the list of the parents
+	 * @pre $none
+	 * @post $none
+	 */
+	@Override
+	public List getParentList() {
 
-        return super.getParentList();
-    }
+		return super.getParentList();
+	}
+
+	@Override
+	public String toString() {
+		return "Job [" + getCloudletId() + "] = {"+taskList+"}";
+	}
+
 }

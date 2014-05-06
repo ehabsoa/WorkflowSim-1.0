@@ -5,6 +5,7 @@ import java.util.Map;
 
 import net.sourceforge.jswarm_pso.FitnessFunction;
 
+import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Vm;
 import org.workflowsim.CondorVM;
 import org.workflowsim.Task;
@@ -14,8 +15,8 @@ public class MyFitnessFunction extends FitnessFunction {
 	private Map<Task, Map<CondorVM, Double>> TP;
 	private Map<CondorVM, Map<CondorVM, Double>> PP;
 	private Map<Task, Map<Task, Double>> e;
-	private List<Task> currentTasks;
-	private List<Task> allTasks;
+	private List<? extends Cloudlet> readyTasks;
+	private List<? extends Cloudlet> allTasks;
 	private List<Vm> vmList;
 
 	public MyFitnessFunction(boolean maximize,
@@ -28,7 +29,7 @@ public class MyFitnessFunction extends FitnessFunction {
 		this.PP = PP;
 		this.e = e;
 		this.vmList = vmList;
-		this.currentTasks = readyTasks;
+		this.readyTasks = readyTasks;
 		this.allTasks = allTasks;
 	}
 
@@ -73,9 +74,9 @@ public class MyFitnessFunction extends FitnessFunction {
 			Task task = (Task) taskObject;
 			int vm1Id = task.getVmId();
 
-			if (vm1Id < 0)
-				vm1Id = (int) Math.round(position[this.currentTasks
-						.indexOf(task)]);
+			if (readyTasks.contains(task))
+				vm1Id = (int) Math
+						.round(position[this.readyTasks.indexOf(task)]);
 
 			if (vm1Id == currentVm.getId()) {
 
@@ -83,12 +84,11 @@ public class MyFitnessFunction extends FitnessFunction {
 					Task task2 = (Task) taskObject2;
 					int vm2Id = task2.getVmId();
 
-					if (vm2Id < 0)
-						vm2Id = (int) Math.round(position[this.currentTasks
+					if (readyTasks.contains(task2))
+						vm2Id = (int) Math.round(position[this.readyTasks
 								.indexOf(task2)]);
 
-					if (vm2Id != currentVm.getId()
-							&& task2.getParentList().contains(task))
+					if (vm2Id != vm1Id && task2.getParentList().contains(task))
 						totalTransferCost += PP.get(currentVm).get(
 								vmList.get(vm2Id))
 								* e.get(task).get(task2);
@@ -104,13 +104,25 @@ public class MyFitnessFunction extends FitnessFunction {
 	/**
 	 * Equation 1 of the paper
 	 */
-	private double getComputationCost(double[] position, CondorVM vm) {
+	private double getComputationCost(double[] position, CondorVM currentVm) {
 		double totalComputationCost = 0.0;
 
-		for (int dimension = 0; dimension < position.length; dimension++)
-			if (vm.getId() == (int) Math.round(position[dimension]))
-				totalComputationCost += TP.get(currentTasks.get(dimension))
-						.get(vmList.get((int) Math.round(position[dimension])));
+		for (int dimension = 0; dimension < position.length; dimension++) {
+			int vmId = (int) Math.round(position[dimension]);
+			if (currentVm.getId() == vmId) {
+				totalComputationCost += TP.get(readyTasks.get(dimension)).get(
+						vmList.get((int) Math.round(position[dimension])));
+			}
+		}
+
+		for (Object taskObject : allTasks) {
+			Task task = (Task) taskObject;
+			if (task.getStatus() == Cloudlet.SUCCESS
+					&& task.getVmId() == currentVm.getId())
+				totalComputationCost += TP.get(task).get(
+						vmList.get(task.getVmId()));
+		}
+
 		return totalComputationCost;
 	}
 
