@@ -339,4 +339,5 @@ public class WorkflowPlanner extends SimEntity {
 	protected void setTaskList(List<Task> taskList) {
 		this.taskList = taskList;
 	}
+
 }

@@ -349,6 +349,4 @@ public class Task extends Cloudlet {
 		return "Task[" + getCloudletId() + "]";
 	}
     
-    
-
 }

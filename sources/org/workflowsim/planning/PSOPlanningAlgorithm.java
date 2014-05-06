@@ -202,7 +202,6 @@ public class PSOPlanningAlgorithm extends BasePlanningAlgorithm {
 	 * @param dag
 	 */
 	private double[] pso(List<Task> readyTasks) {
-
 		/*
 		 * Step 1: Set particle dimension as equal to the size of ready tasks
 		 * list
