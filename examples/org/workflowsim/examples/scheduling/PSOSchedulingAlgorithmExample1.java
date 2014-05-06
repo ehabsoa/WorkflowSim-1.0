@@ -70,7 +70,7 @@ public class PSOSchedulingAlgorithmExample1 extends WorkflowSimBasicExample1 {
 			/**
 			 * Should change this based on real physical path
 			 */
-			String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/Montage_100.xml";
+			String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/Montage_25.xml";
 
 			File daxFile = new File(daxPath);
 			if (!daxFile.exists()) {

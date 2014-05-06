@@ -18,6 +18,7 @@ package org.workflowsim;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.DatacenterBroker;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
@@ -27,12 +28,14 @@ import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
 import org.cloudbus.cloudsim.lists.VmList;
 import org.workflowsim.failure.FailureGenerator;
+import org.workflowsim.planning.BasePlanningAlgorithm;
 import org.workflowsim.scheduling.DataAwareSchedulingAlgorithm;
 import org.workflowsim.scheduling.BaseSchedulingAlgorithm;
 import org.workflowsim.scheduling.FCFSSchedulingAlgorithm;
 import org.workflowsim.scheduling.MCTSchedulingAlgorithm;
 import org.workflowsim.scheduling.MaxMinSchedulingAlgorithm;
 import org.workflowsim.scheduling.MinMinSchedulingAlgorithm;
+import org.workflowsim.scheduling.PSOSSchedulingAlgorithm;
 import org.workflowsim.scheduling.StaticSchedulingAlgorithm;
 import org.workflowsim.utils.Parameters;
 import org.workflowsim.utils.Parameters.SchedulingAlgorithm;
@@ -40,364 +43,409 @@ import org.workflowsim.utils.Parameters.SchedulingAlgorithm;
 /**
  * WorkflowScheduler represents a algorithm acting on behalf of a user. It hides
  * VM management, as vm creation, sumbission of jobs to this VMs and destruction
- * of VMs.
- * It picks up a scheduling algorithm based on the configuration
- *
+ * of VMs. It picks up a scheduling algorithm based on the configuration
+ * 
  * @author Weiwei Chen
  * @since WorkflowSim Toolkit 1.0
  * @date Apr 9, 2013
  */
 public class WorkflowScheduler extends DatacenterBroker {
 
-    /**
-     * The workflow engine id associated with this workflow algorithm.
-     */
-    private int workflowEngineId;
+	/**
+	 * The workflow engine id associated with this workflow algorithm.
+	 */
+	private int workflowEngineId;
 
-    /**
-     * Created a new WorkflowScheduler object.
-     *
-     * @param name name to be associated with this entity (as required by
-     * Sim_entity class from simjava package)
-     * @throws Exception the exception
-     * @pre name != null
-     * @post $none
-     */
-    public WorkflowScheduler(String name) throws Exception {
-        super(name);
-    }
+	private BasePlanningAlgorithm planner;
 
-    /**
-     * Binds this scheduler to a datacenter
-     */
-    public void bindSchedulerDatacenter(int datacenterId) {
-        if (datacenterId <= 0) {
-            Log.printLine("Error in data center id");
-            return;
-        }
-        this.datacenterIdsList.add(datacenterId);
-    }
-    
-    /**
-     * Sets the workflow engine id
-     *
-     * @param workflowEngineId the workflow engine id
-     */
-    public void setWorkflowEngineId(int workflowEngineId) {
-        this.workflowEngineId = workflowEngineId;
-    }
+	/**
+	 * Created a new WorkflowScheduler object.
+	 * 
+	 * @param name
+	 *            name to be associated with this entity (as required by
+	 *            Sim_entity class from simjava package)
+	 * @throws Exception
+	 *             the exception
+	 * @pre name != null
+	 * @post $none
+	 */
+	public WorkflowScheduler(String name) throws Exception {
+		super(name);
+	}
 
-    /**
-     * Process an event
-     *
-     * @param ev a simEvent obj
-     */
-    @Override
-    public void processEvent(SimEvent ev) {
-        switch (ev.getTag()) {
-            // Resource characteristics request
-            case CloudSimTags.RESOURCE_CHARACTERISTICS_REQUEST:
-                processResourceCharacteristicsRequest(ev);
-                break;
-            // Resource characteristics answer
-            case CloudSimTags.RESOURCE_CHARACTERISTICS:
-                processResourceCharacteristics(ev);
-                break;
-            // VM Creation answer
-            case CloudSimTags.VM_CREATE_ACK:
-                processVmCreate(ev);
-                break;
-            // A finished cloudlet returned
-            case WorkflowSimTags.CLOUDLET_CHECK:
-                processCloudletReturn(ev);
-                break;
-            case CloudSimTags.CLOUDLET_RETURN:
-                processCloudletReturn(ev);
-                break;
-            // if the simulation finishes
-            case CloudSimTags.END_OF_SIMULATION:
-                shutdownEntity();
-                break;
-            case CloudSimTags.CLOUDLET_SUBMIT:
-                processCloudletSubmit(ev);
-                break;
+	/**
+	 * Binds this scheduler to a datacenter
+	 */
+	public void bindSchedulerDatacenter(int datacenterId) {
+		if (datacenterId <= 0) {
+			Log.printLine("Error in data center id");
+			return;
+		}
+		this.datacenterIdsList.add(datacenterId);
+	}
 
-            case WorkflowSimTags.CLOUDLET_UPDATE:
-                processCloudletUpdate(ev);
-                break;
-            // other unknown tags are processed by this method
-            default:
-                processOtherEvent(ev);
-                break;
-        }
-    }
+	/**
+	 * Sets the workflow engine id
+	 * 
+	 * @param workflowEngineId
+	 *            the workflow engine id
+	 */
+	public void setWorkflowEngineId(int workflowEngineId) {
+		this.workflowEngineId = workflowEngineId;
+	}
 
-    /**
-     * Switch between multiple schedulers. Based on algorithm.method
-     *
-     * @param name the SchedulingAlgorithm name
-     * @return the algorithm that extends BaseSchedulingAlgorithm
-     */
-    private BaseSchedulingAlgorithm getScheduler(SchedulingAlgorithm name) {
-        BaseSchedulingAlgorithm algorithm = null;
+	/**
+	 * Process an event
+	 * 
+	 * @param ev
+	 *            a simEvent obj
+	 */
+	@Override
+	public void processEvent(SimEvent ev) {
+		switch (ev.getTag()) {
+		// Resource characteristics request
+		case CloudSimTags.RESOURCE_CHARACTERISTICS_REQUEST:
+			processResourceCharacteristicsRequest(ev);
+			break;
+		// Resource characteristics answer
+		case CloudSimTags.RESOURCE_CHARACTERISTICS:
+			processResourceCharacteristics(ev);
+			break;
+		// VM Creation answer
+		case CloudSimTags.VM_CREATE_ACK:
+			processVmCreate(ev);
+			break;
+		// A finished cloudlet returned
+		case WorkflowSimTags.CLOUDLET_CHECK:
+			processCloudletReturn(ev);
+			break;
+		case CloudSimTags.CLOUDLET_RETURN:
+			processCloudletReturn(ev);
+			break;
+		// if the simulation finishes
+		case CloudSimTags.END_OF_SIMULATION:
+			shutdownEntity();
+			break;
+		case CloudSimTags.CLOUDLET_SUBMIT:
+			processCloudletSubmit(ev);
+			break;
 
-        // choose which algorithm to use. Make sure you have add related enum in
-        //Parameters.java
-        switch (name) {
-            //by default it is Static
-            case FCFS:
-                algorithm = new FCFSSchedulingAlgorithm();
-                break;
-            case MINMIN:
-                algorithm = new MinMinSchedulingAlgorithm();
-                break;
-            case MAXMIN:
-                algorithm = new MaxMinSchedulingAlgorithm();
-                break;
-            case MCT:
-                algorithm = new MCTSchedulingAlgorithm();
-                break;
-            case DATA:
-                algorithm = new DataAwareSchedulingAlgorithm();
-                break;
-            case STATIC:
-                algorithm = new StaticSchedulingAlgorithm();
-                break;
-            default:
-                algorithm = new StaticSchedulingAlgorithm();
-                break;
+		case WorkflowSimTags.CLOUDLET_UPDATE:
+			processCloudletUpdate(ev);
+			break;
 
-        }
+		case WorkflowSimTags.WORKFLOW_PLANNER:
+			processWorkflowPlaner(ev);
+			break;
 
-        return algorithm;
-    }
+		// other unknown tags are processed by this method
+		default:
+			processOtherEvent(ev);
+			break;
+		}
+	}
 
-    /**
-     * Process the ack received due to a request for VM creation.
-     *
-     * @param ev a SimEvent object
-     * @pre ev != null
-     * @post $none
-     */
-    @Override
-    protected void processVmCreate(SimEvent ev) {
-        int[] data = (int[]) ev.getData();
-        int datacenterId = data[0];
-        int vmId = data[1];
-        int result = data[2];
+	private void processWorkflowPlaner(SimEvent ev) {
+		planner = (BasePlanningAlgorithm) ev.getData();
 
-        if (result == CloudSimTags.TRUE) {
-            getVmsToDatacentersMap().put(vmId, datacenterId);
-            /**
-             * Fix a bug of cloudsim Don't add a null to getVmsCreatedList()
-             * June 15, 2013
-             */
-            if (VmList.getById(getVmList(), vmId) != null) {
-                getVmsCreatedList().add(VmList.getById(getVmList(), vmId));
+	}
 
-                Log.printLine(CloudSim.clock() + ": " + getName() + ": VM #" + vmId
-                        + " has been created in Datacenter #" + datacenterId + ", Host #"
-                        + VmList.getById(getVmsCreatedList(), vmId).getHost().getId());
-            }
-        } else {
-            Log.printLine(CloudSim.clock() + ": " + getName() + ": Creation of VM #" + vmId
-                    + " failed in Datacenter #" + datacenterId);
-        }
+	/**
+	 * Switch between multiple schedulers. Based on algorithm.method
+	 * 
+	 * @param name
+	 *            the SchedulingAlgorithm name
+	 * @return the algorithm that extends BaseSchedulingAlgorithm
+	 */
+	private BaseSchedulingAlgorithm getScheduler(SchedulingAlgorithm name) {
+		BaseSchedulingAlgorithm algorithm = null;
 
-        incrementVmsAcks();
+		// choose which algorithm to use. Make sure you have add related enum in
+		// Parameters.java
+		switch (name) {
+		// by default it is Static
+		case FCFS:
+			algorithm = new FCFSSchedulingAlgorithm();
+			break;
+		case MINMIN:
+			algorithm = new MinMinSchedulingAlgorithm();
+			break;
+		case MAXMIN:
+			algorithm = new MaxMinSchedulingAlgorithm();
+			break;
+		case MCT:
+			algorithm = new MCTSchedulingAlgorithm();
+			break;
+		case DATA:
+			algorithm = new DataAwareSchedulingAlgorithm();
+			break;
+		case STATIC:
+			algorithm = new StaticSchedulingAlgorithm();
+			break;
+		case PSO:
+			algorithm = new PSOSSchedulingAlgorithm(planner);
+			break;
+		default:
+			algorithm = new StaticSchedulingAlgorithm();
+			break;
 
-        // all the requested VMs have been created
-        if (getVmsCreatedList().size() == getVmList().size() - getVmsDestroyed()) {
-            submitCloudlets();
-        } else {
-            // all the acks received, but some VMs were not created
-            if (getVmsRequested() == getVmsAcks()) {
-                // find id of the next datacenter that has not been tried
-                for (int nextDatacenterId : getDatacenterIdsList()) {
-                    if (!getDatacenterRequestedIdsList().contains(nextDatacenterId)) {
-                        createVmsInDatacenter(nextDatacenterId);
-                        return;
-                    }
-                }
+		}
 
-                // all datacenters already queried
-                if (getVmsCreatedList().size() > 0) { // if some vm were created
-                    submitCloudlets();
-                } else { // no vms created. abort
-                    Log.printLine(CloudSim.clock() + ": " + getName()
-                            + ": none of the required VMs could be created. Aborting");
-                    finishExecution();
-                }
-            }
-        }
-    }
+		return algorithm;
+	}
 
-    /**
-     * Update a cloudlet (job)
-     *
-     * @param ev a simEvent object
-     */
-    protected void processCloudletUpdate(SimEvent ev) {
+	/**
+	 * Process the ack received due to a request for VM creation.
+	 * 
+	 * @param ev
+	 *            a SimEvent object
+	 * @pre ev != null
+	 * @post $none
+	 */
+	@Override
+	protected void processVmCreate(SimEvent ev) {
+		int[] data = (int[]) ev.getData();
+		int datacenterId = data[0];
+		int vmId = data[1];
+		int result = data[2];
 
-        BaseSchedulingAlgorithm scheduler = getScheduler(Parameters.getSchedulingAlgorithm());
-        scheduler.setCloudletList(getCloudletList());
-        scheduler.setVmList(getVmsCreatedList());
+		if (result == CloudSimTags.TRUE) {
+			getVmsToDatacentersMap().put(vmId, datacenterId);
+			/**
+			 * Fix a bug of cloudsim Don't add a null to getVmsCreatedList()
+			 * June 15, 2013
+			 */
+			if (VmList.getById(getVmList(), vmId) != null) {
+				getVmsCreatedList().add(VmList.getById(getVmList(), vmId));
 
-        try {
-            scheduler.run();
-        } catch (Exception e) {
-            Log.printLine("Error in configuring scheduler_method");
-            e.printStackTrace();
-        }
+				Log.printLine(CloudSim.clock()
+						+ ": "
+						+ getName()
+						+ ": VM #"
+						+ vmId
+						+ " has been created in Datacenter #"
+						+ datacenterId
+						+ ", Host #"
+						+ VmList.getById(getVmsCreatedList(), vmId).getHost()
+								.getId());
+			}
+		} else {
+			Log.printLine(CloudSim.clock() + ": " + getName()
+					+ ": Creation of VM #" + vmId + " failed in Datacenter #"
+					+ datacenterId);
+		}
 
-        List scheduledList = scheduler.getScheduledList();
-        for (Iterator it = scheduledList.iterator(); it.hasNext();) {
-            Cloudlet cloudlet = (Cloudlet) it.next();
-            int vmId = cloudlet.getVmId();
-            double delay = 0.0;
-            if(Parameters.getOverheadParams().getQueueDelay()!=null){
-                delay = Parameters.getOverheadParams().getQueueDelay(cloudlet);
-            }
-            schedule(getVmsToDatacentersMap().get(vmId), delay, CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+		incrementVmsAcks();
 
-        }
-        getCloudletList().removeAll(scheduledList);
-        getCloudletSubmittedList().addAll(scheduledList);
-        cloudletsSubmitted += scheduledList.size();
+		// all the requested VMs have been created
+		if (getVmsCreatedList().size() == getVmList().size()
+				- getVmsDestroyed()) {
+			submitCloudlets();
+		} else {
+			// all the acks received, but some VMs were not created
+			if (getVmsRequested() == getVmsAcks()) {
+				// find id of the next datacenter that has not been tried
+				for (int nextDatacenterId : getDatacenterIdsList()) {
+					if (!getDatacenterRequestedIdsList().contains(
+							nextDatacenterId)) {
+						createVmsInDatacenter(nextDatacenterId);
+						return;
+					}
+				}
 
-    }
+				// all datacenters already queried
+				if (getVmsCreatedList().size() > 0) { // if some vm were created
+					submitCloudlets();
+				} else { // no vms created. abort
+					Log.printLine(CloudSim.clock()
+							+ ": "
+							+ getName()
+							+ ": none of the required VMs could be created. Aborting");
+					finishExecution();
+				}
+			}
+		}
+	}
 
-    /**
-     * Process a cloudlet (job) return event.
-     *
-     * @param ev a SimEvent object
-     * @pre ev != $null
-     * @post $none
-     */
-    @Override
-    protected void processCloudletReturn(SimEvent ev) {
-        Cloudlet cloudlet = (Cloudlet) ev.getData();
+	/**
+	 * Update a cloudlet (job)
+	 * 
+	 * @param ev
+	 *            a simEvent object
+	 */
+	protected void processCloudletUpdate(SimEvent ev) {
 
-        Job job = (Job) cloudlet;
+		BaseSchedulingAlgorithm scheduler = getScheduler(Parameters
+				.getSchedulingAlgorithm());
+		scheduler.setCloudletList(getCloudletList());
+		scheduler.setVmList(getVmsCreatedList());
 
-        /**
-         * Generate a failure if failure rate is not zeros.
-         */
-        FailureGenerator.generate(job);
+		try {
+			scheduler.run();
+		} catch (Exception e) {
+			Log.printLine("Error in configuring scheduler_method");
+			e.printStackTrace();
+		}
 
-        getCloudletReceivedList().add(cloudlet);
-        getCloudletSubmittedList().remove(cloudlet);
+		List scheduledList = scheduler.getScheduledList();
+		for (Iterator it = scheduledList.iterator(); it.hasNext();) {
+			Cloudlet cloudlet = (Cloudlet) it.next();
+			int vmId = cloudlet.getVmId();
+			double delay = 0.0;
+			if (Parameters.getOverheadParams().getQueueDelay() != null) {
+				delay = Parameters.getOverheadParams().getQueueDelay(cloudlet);
+			}
+			schedule(getVmsToDatacentersMap().get(vmId), delay,
+					CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
 
-        CondorVM vm = (CondorVM) getVmsCreatedList().get(cloudlet.getVmId());
-        //so that this resource is released
-        vm.setState(WorkflowSimTags.VM_STATUS_IDLE);
+		}
+		getCloudletList().removeAll(scheduledList);
+		getCloudletSubmittedList().addAll(scheduledList);
+		cloudletsSubmitted += scheduledList.size();
 
-        double delay = 0.0;
-        if(Parameters.getOverheadParams().getPostDelay()!=null){
-            delay = Parameters.getOverheadParams().getPostDelay(job);
-        }
-        schedule(this.workflowEngineId, delay, CloudSimTags.CLOUDLET_RETURN, cloudlet);
+	}
 
-        cloudletsSubmitted--;
-        //not really update right now, should wait 1 s until many jobs have returned
+	/**
+	 * Process a cloudlet (job) return event.
+	 * 
+	 * @param ev
+	 *            a SimEvent object
+	 * @pre ev != $null
+	 * @post $none
+	 */
+	@Override
+	protected void processCloudletReturn(SimEvent ev) {
+		Cloudlet cloudlet = (Cloudlet) ev.getData();
 
-        schedule(this.getId(), 0.0, WorkflowSimTags.CLOUDLET_UPDATE);
+		Job job = (Job) cloudlet;
 
-    }
+		/**
+		 * Generate a failure if failure rate is not zeros.
+		 */
+		FailureGenerator.generate(job);
 
-    /**
-     * process cloudlet (job) check (not supported yet)
-     *
-     * @param ev a simEvent object
-     */
-    protected void processCloudletCheck(SimEvent ev) {
-        /**
-         * Left for future use.
-         */
-    }
+		getCloudletReceivedList().add(cloudlet);
+		getCloudletSubmittedList().remove(cloudlet);
 
-    /**
-     * Start this entity (WorkflowScheduler)
-     */
-    @Override
-    public void startEntity() {
-        Log.printLine(getName() + " is starting...");
-        // this resource should register to regional GIS.
-        // However, if not specified, then register to system GIS (the
-        // default CloudInformationService) entity.
-        //int gisID = CloudSim.getEntityId(regionalCisName);
-        int gisID = -1;
-        if (gisID == -1) {
-            gisID = CloudSim.getCloudInfoServiceEntityId();
-        }
+		CondorVM vm = (CondorVM) getVmsCreatedList().get(cloudlet.getVmId());
+		// so that this resource is released
+		vm.setState(WorkflowSimTags.VM_STATUS_IDLE);
 
-        // send the registration to GIS
-        sendNow(gisID, CloudSimTags.REGISTER_RESOURCE, getId());
-        //the below sentence is executed in workflow engine
-        //schedule(getId(), 0, CloudSimTags.RESOURCE_CHARACTERISTICS_REQUEST);
+		double delay = 0.0;
+		if (Parameters.getOverheadParams().getPostDelay() != null) {
+			delay = Parameters.getOverheadParams().getPostDelay(job);
+		}
+		schedule(this.workflowEngineId, delay, CloudSimTags.CLOUDLET_RETURN,
+				cloudlet);
 
-    }
+		cloudletsSubmitted--;
+		// not really update right now, should wait 1 s until many jobs have
+		// returned
 
-    /**
-     * Terminate this entity (WorkflowScheduler)
-     */
-    @Override
-    public void shutdownEntity() {
+		schedule(this.getId(), 0.0, WorkflowSimTags.CLOUDLET_UPDATE);
 
-        clearDatacenters();
-        Log.printLine(getName() + " is shutting down...");
+	}
 
-    }
+	/**
+	 * process cloudlet (job) check (not supported yet)
+	 * 
+	 * @param ev
+	 *            a simEvent object
+	 */
+	protected void processCloudletCheck(SimEvent ev) {
+		/**
+		 * Left for future use.
+		 */
+	}
 
-    /**
-     * Submit cloudlets (jobs) to the created VMs. Scheduling is here
-     *
-     * @pre $none
-     * @post $none
-     */
-    @Override
-    protected void submitCloudlets() {
+	/**
+	 * Start this entity (WorkflowScheduler)
+	 */
+	@Override
+	public void startEntity() {
+		Log.printLine(getName() + " is starting...");
+		// this resource should register to regional GIS.
+		// However, if not specified, then register to system GIS (the
+		// default CloudInformationService) entity.
+		// int gisID = CloudSim.getEntityId(regionalCisName);
+		int gisID = -1;
+		if (gisID == -1) {
+			gisID = CloudSim.getCloudInfoServiceEntityId();
+		}
 
-        sendNow(this.workflowEngineId, CloudSimTags.CLOUDLET_SUBMIT, null);
-    }
-    /**
-     * A trick here. Assure that we just submit it once
-     */
-    private boolean processCloudletSubmitHasShown = false;
+		// send the registration to GIS
+		sendNow(gisID, CloudSimTags.REGISTER_RESOURCE, getId());
+		// the below sentence is executed in workflow engine
+		// schedule(getId(), 0, CloudSimTags.RESOURCE_CHARACTERISTICS_REQUEST);
 
-    /**
-     * Submits cloudlet (job) list
-     *
-     * @param ev a simEvent object
-     */
-    protected void processCloudletSubmit(SimEvent ev) {
-        List<Job> list = (List) ev.getData();
-        getCloudletList().addAll(list);
+	}
 
-        sendNow(this.getId(), WorkflowSimTags.CLOUDLET_UPDATE);
-        if (!processCloudletSubmitHasShown) {
-            //Log.printLine("Pay Attention that the actual vm size is " + getVmsCreatedList().size());
-            processCloudletSubmitHasShown = true;
-        }
-    }
+	/**
+	 * Terminate this entity (WorkflowScheduler)
+	 */
+	@Override
+	public void shutdownEntity() {
 
-    /**
-     * Process a request for the characteristics of a PowerDatacenter.
-     *
-     * @param ev a SimEvent object
-     * @pre ev != $null
-     * @post $none
-     */
-    @Override
-    protected void processResourceCharacteristicsRequest(SimEvent ev) {
+		clearDatacenters();
+		Log.printLine(getName() + " is shutting down...");
 
-        setDatacenterCharacteristicsList(new HashMap<Integer, DatacenterCharacteristics>());
+	}
 
-        Log.printLine(CloudSim.clock() + ": " + getName() + ": Cloud Resource List received with "
-                + getDatacenterIdsList().size() + " resource(s)");
+	/**
+	 * Submit cloudlets (jobs) to the created VMs. Scheduling is here
+	 * 
+	 * @pre $none
+	 * @post $none
+	 */
+	@Override
+	protected void submitCloudlets() {
 
-        for (Integer datacenterId : getDatacenterIdsList()) {
-            sendNow(datacenterId, CloudSimTags.RESOURCE_CHARACTERISTICS, getId());
-        }
-    }
+		sendNow(this.workflowEngineId, CloudSimTags.CLOUDLET_SUBMIT, null);
+	}
+
+	/**
+	 * A trick here. Assure that we just submit it once
+	 */
+	private boolean processCloudletSubmitHasShown = false;
+
+	/**
+	 * Submits cloudlet (job) list
+	 * 
+	 * @param ev
+	 *            a simEvent object
+	 */
+	protected void processCloudletSubmit(SimEvent ev) {
+		List<Job> list = (List) ev.getData();
+		getCloudletList().addAll(list);
+
+		sendNow(this.getId(), WorkflowSimTags.CLOUDLET_UPDATE);
+		if (!processCloudletSubmitHasShown) {
+			// Log.printLine("Pay Attention that the actual vm size is " +
+			// getVmsCreatedList().size());
+			processCloudletSubmitHasShown = true;
+		}
+	}
+
+	/**
+	 * Process a request for the characteristics of a PowerDatacenter.
+	 * 
+	 * @param ev
+	 *            a SimEvent object
+	 * @pre ev != $null
+	 * @post $none
+	 */
+	@Override
+	protected void processResourceCharacteristicsRequest(SimEvent ev) {
+
+		setDatacenterCharacteristicsList(new HashMap<Integer, DatacenterCharacteristics>());
+
+		Log.printLine(CloudSim.clock() + ": " + getName()
+				+ ": Cloud Resource List received with "
+				+ getDatacenterIdsList().size() + " resource(s)");
+
+		for (Integer datacenterId : getDatacenterIdsList()) {
+			sendNow(datacenterId, CloudSimTags.RESOURCE_CHARACTERISTICS,
+					getId());
+		}
+	}
 }

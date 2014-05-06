@@ -17,6 +17,7 @@ package org.workflowsim;
 
 import java.util.Iterator;
 import java.util.List;
+
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.CloudletScheduler;
 import org.cloudbus.cloudsim.Consts;
@@ -31,10 +32,10 @@ import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
-import org.workflowsim.utils.ReplicaCatalog;
 import org.workflowsim.utils.Parameters;
 import org.workflowsim.utils.Parameters.ClassType;
 import org.workflowsim.utils.Parameters.FileType;
+import org.workflowsim.utils.ReplicaCatalog;
 
 /**
  * DatacenterExtended extends Datacenter so as we can use CondorVM and other
@@ -133,7 +134,6 @@ public class DatacenterExtended extends Datacenter {
             if (cl.getClassType() == ClassType.COMPUTE.value) {
                 fileTransferTime = processDataStageIn(job.getFileList(), cl);
             }
-            System.out.println("Task: "+task.getCloudletId() + " trasfer: "+fileTransferTime);
 
             Host host = getVmAllocationPolicy().getHost(vmId, userId);
             Vm vm = host.getVm(vmId, userId);

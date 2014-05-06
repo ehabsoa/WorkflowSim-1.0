@@ -15,19 +15,21 @@ public class MyFitnessFunction extends FitnessFunction {
 	private Map<CondorVM, Map<CondorVM, Double>> PP;
 	private Map<Task, Map<Task, Double>> e;
 	private List<Task> currentTasks;
-	private List<? extends Vm> vmList;
+	private List<Task> allTasks;
+	private List<Vm> vmList;
 
 	public MyFitnessFunction(boolean maximize,
 			Map<Task, Map<CondorVM, Double>> TP,
 			Map<CondorVM, Map<CondorVM, Double>> PP,
-			Map<Task, Map<Task, Double>> e, List<? extends Vm> vmList,
-			List<Task> tasks) {
+			Map<Task, Map<Task, Double>> e, List<Vm> vmList,
+			List<Task> readyTasks, List<Task> allTasks) {
 		super(maximize);
 		this.TP = TP;
 		this.PP = PP;
 		this.e = e;
 		this.vmList = vmList;
-		this.currentTasks = tasks;
+		this.currentTasks = readyTasks;
+		this.allTasks = allTasks;
 	}
 
 	/**
@@ -64,22 +66,34 @@ public class MyFitnessFunction extends FitnessFunction {
 	/**
 	 * Equation 2 of the paper
 	 */
-	private double getTrasmissionCost(double[] position, CondorVM vm) {
+	private double getTrasmissionCost(double[] position, CondorVM currentVm) {
 		double totalTransferCost = 0.0;
 
-		for (int d1 = 0; d1 < position.length; d1++) {
-			Task t1 = this.currentTasks.get(d1);
-			if ((int)Math.round(position[d1]) == vm.getId()) {
-				for (int d2 = 0; d2 < position.length; d2++) {
-					Task t2 = this.currentTasks.get(d2);
-					if ((int)Math.round(position[d2]) != vm.getId()
-							&& t2.getParentList().contains(t1)
-							&& t1.getChildList().contains(t2)) {
-						totalTransferCost += this.PP.get(vm).get(
-								vmList.get((int)Math.round(position[d2])))
-								* this.e.get(t1).get(t2);
-					}
+		for (Object taskObject : allTasks) {
+			Task task = (Task) taskObject;
+			int vm1Id = task.getVmId();
+
+			if (vm1Id < 0)
+				vm1Id = (int) Math.round(position[this.currentTasks
+						.indexOf(task)]);
+
+			if (vm1Id == currentVm.getId()) {
+
+				for (Object taskObject2 : allTasks) {
+					Task task2 = (Task) taskObject2;
+					int vm2Id = task2.getVmId();
+
+					if (vm2Id < 0)
+						vm2Id = (int) Math.round(position[this.currentTasks
+								.indexOf(task2)]);
+
+					if (vm2Id != currentVm.getId()
+							&& task2.getParentList().contains(task))
+						totalTransferCost += PP.get(currentVm).get(
+								vmList.get(vm2Id))
+								* e.get(task).get(task2);
 				}
+
 			}
 
 		}

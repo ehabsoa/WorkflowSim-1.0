@@ -1,13 +1,16 @@
 package org.workflowsim.planning;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.jswarm_pso.Swarm;
 
+import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.File;
 import org.workflowsim.CondorVM;
+import org.workflowsim.Job;
 import org.workflowsim.Task;
 import org.workflowsim.utils.MyFitnessFunction;
 import org.workflowsim.utils.MyParticle;
@@ -24,6 +27,8 @@ public class PSOPlanningAlgorithm extends BasePlanningAlgorithm {
 	private Map<CondorVM, Map<CondorVM, Double>> PP;
 
 	private Map<Task, Map<Task, Double>> e;
+
+	private List<Task> mapping;
 
 	public PSOPlanningAlgorithm() {
 		TP = new HashMap<Task, Map<CondorVM, Double>>();
@@ -69,38 +74,43 @@ public class PSOPlanningAlgorithm extends BasePlanningAlgorithm {
 		 */
 		double bestPosition[] = pso(getTaskList());
 		for (int d = 0; d < bestPosition.length; d++) {
-			System.out
-					.println("Task[" + d + "] => VM[" + bestPosition[d] + "]");
-			Task t = (Task)getTaskList().get(d);
-			t.setVmId(((int)Math.round(bestPosition[d])));
+			System.out.println("Task[" + d + "] => VM["
+					+ Math.round(bestPosition[d]) + "]");
+			Task t = (Task) getTaskList().get(d);
+			t.setVmId(((int) Math.round(bestPosition[d])));
 		}
+
+		mapping = new ArrayList<Task>(getTaskList());
 
 	}
 
-	private void averageCommunicationCostBetweenResources() {
-		double[][] bandwidths = Parameters.getBandwidths();
-		for (Object vmObject : getVmList()) {
-			CondorVM vm = (CondorVM) vmObject;
+	public void doOnline(List<Cloudlet> readyTask) {
+		double bestPosition[] = pso(mapping);
+		System.out.println("------");
 
-			Map<CondorVM, Double> costs = new HashMap<CondorVM, Double>();
-			for (Object vmObject2 : getVmList()) {
-				CondorVM vm2 = (CondorVM) vmObject2;
+		for (Cloudlet cloudlet : readyTask) {
+			Job job = (Job) cloudlet;
 
-				if (vm.equals(vm2))
-					costs.put(vm2, 0.0);
-				else
-					costs.put(vm2, vm2.getDataTransferOutPrice()
-							/ bandwidths[vm.getId()][vm2.getId()]);
+			if (!job.getTaskList().isEmpty()) {
+				Task t = job.getTaskList().get(0);
+
+				for (int d = 0; d < bestPosition.length; d++) {
+					if (t.equals((Task) mapping.get(d))) {
+						System.out.println("Task[" + d + "] => VM["
+								+ Math.round(bestPosition[d]) + "]");
+						t.setVmId(((int) Math.round(bestPosition[d])));
+						job.setVmId(((int) Math.round(bestPosition[d])));
+					}
+				}
 			}
 
-			PP.put(vm, costs);
 		}
 
 	}
 
 	private void averageComputationCostAllTaskInAllResources() {
-		for (Object taskObject : getTaskList()) {
 
+		for (Object taskObject : getTaskList()) {
 			Task task = (Task) taskObject;
 			Map<CondorVM, Double> costsVm = new HashMap<CondorVM, Double>();
 
@@ -114,20 +124,43 @@ public class PSOPlanningAlgorithm extends BasePlanningAlgorithm {
 							(task.getCloudletTotalLength() / vm.getMips())
 									* vm.getPrice());
 			}
-			TP.put(task, costsVm);
+
+			this.TP.put(task, costsVm);
 		}
+	}
+
+	private void averageCommunicationCostBetweenResources() {
+
+		for (Object vmObject : getVmList()) {
+			CondorVM vm1 = (CondorVM) vmObject;
+			Map<CondorVM, Double> costs = new HashMap<CondorVM, Double>();
+			for (Object vmObject2 : getVmList()) {
+				CondorVM vm2 = (CondorVM) vmObject2;
+				if (vm1.equals(vm2))
+					costs.put(vm2, 0.0);
+				else
+					costs.put(
+							vm2,
+							vm2.getDataTransferOutPrice()
+									/ getBandwith(vm1, vm2));
+			}
+			this.PP.put(vm1, costs);
+		}
+
 	}
 
 	private void calculateEdgeWeight() {
 		for (Object parentObject : getTaskList()) {
 			Task parent = (Task) parentObject;
-			Map<Task, Double> edge = new HashMap<Task, Double>();
+			Map<Task, Double> children = new HashMap<Task, Double>();
 
 			for (Task child : parent.getChildList()) {
-				edge.put(child, calculateSizeOfAllFilesTransfer(parent, child));
+				children.put(child,
+						calculateSizeOfAllFilesTransfer(parent, child));
 			}
-			e.put(parent, edge);
+			e.put(parent, children);
 		}
+
 	}
 
 	/**
@@ -169,6 +202,7 @@ public class PSOPlanningAlgorithm extends BasePlanningAlgorithm {
 	 * @param dag
 	 */
 	private double[] pso(List<Task> readyTasks) {
+
 		/*
 		 * Step 1: Set particle dimension as equal to the size of ready tasks
 		 * list
@@ -181,10 +215,11 @@ public class PSOPlanningAlgorithm extends BasePlanningAlgorithm {
 		/*
 		 * Step 2: Initialize particles position and velocity randomly
 		 */
-		@SuppressWarnings("unchecked")
-		Swarm swarm = new Swarm(Swarm.DEFAULT_NUMBER_OF_PARTICLES,
-				new MyParticle(), new MyFitnessFunction(false, this.TP,
-						this.PP, this.e, getVmList(), readyTasks));
+		Swarm swarm = new Swarm(
+				getTaskList().size() < Swarm.DEFAULT_NUMBER_OF_PARTICLES ? Swarm.DEFAULT_NUMBER_OF_PARTICLES
+						: getTaskList().size(), new MyParticle(),
+				new MyFitnessFunction(false, this.TP, this.PP, this.e,
+						getVmList(), readyTasks, getTaskList()));
 
 		swarm.setMaxPosition(getVmList().size() - 1);
 		swarm.setMinPosition(0);
@@ -193,6 +228,11 @@ public class PSOPlanningAlgorithm extends BasePlanningAlgorithm {
 			swarm.evolve();
 
 		return swarm.getBestPosition();
+	}
+
+	private double getBandwith(CondorVM j, CondorVM k) {
+		// transfers between two VMs is limited to both VMs
+		return Math.min(j.getBw(), k.getBw());
 	}
 
 }
