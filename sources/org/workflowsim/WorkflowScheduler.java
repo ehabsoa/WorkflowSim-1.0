@@ -134,7 +134,7 @@ public class WorkflowScheduler extends DatacenterBroker {
 			processCloudletUpdate(ev);
 			break;
 
-		case WorkflowSimTags.WORKFLOW_PLANNER:
+		case WorkflowSimTags.WORKFLOW_PLANNER_SUBMIT:
 			processWorkflowPlaner(ev);
 			break;
 

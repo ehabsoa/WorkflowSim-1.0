@@ -1,4 +1,4 @@
-package org.workflowsim.examples.scheduling;
+package org.workflowsim.examples.planning;
 
 import java.io.File;
 import java.util.Calendar;
@@ -20,7 +20,8 @@ import org.workflowsim.utils.OverheadParameters;
 import org.workflowsim.utils.Parameters;
 import org.workflowsim.utils.ReplicaCatalog;
 
-public class PSOSchedulingAlgorithmExample1 extends WorkflowSimBasicExample1 {
+public class PCHPlanningAlgorithmExample1 extends WorkflowSimBasicExample1 {
+
 	// //////////////////////// STATIC METHODS ///////////////////////
 	protected static List<CondorVM> createVM(int userId, int vms) {
 
@@ -33,7 +34,7 @@ public class PSOSchedulingAlgorithmExample1 extends WorkflowSimBasicExample1 {
 		int ram = 512; // vm memory (MB)
 		int mips = 1000;
 		long bw = 1000;
-		int pesNumber = 2; // number of cpus
+		int pesNumber = 1; // number of cpus
 		String vmm = "Xen"; // VMM name
 
 		// create VMs
@@ -43,12 +44,10 @@ public class PSOSchedulingAlgorithmExample1 extends WorkflowSimBasicExample1 {
 
 		for (int i = 0; i < vms; i++) {
 			double ratio = bwRandom.nextDouble();
-			vm[i] = new CondorVM(i, userId, mips * ratio, pesNumber, ram,
-					(long) (bw * ratio), size, vmm,
+			vm[i] = new CondorVM(i, userId, mips/* * ratio*/, pesNumber, ram,
+					(long) (bw /* * ratio*/), size, vmm,
 					new CloudletSchedulerSpaceShared());
 			list.add(vm[i]);
-			
-			vm[i].setPrice(2.1/i);
 		}
 
 		return list;
@@ -85,8 +84,8 @@ public class PSOSchedulingAlgorithmExample1 extends WorkflowSimBasicExample1 {
 			 * algorithm should be static such that the scheduler would not
 			 * override the result of the planner
 			 */
-			Parameters.SchedulingAlgorithm sch_method = Parameters.SchedulingAlgorithm.PSO;
-			Parameters.PlanningAlgorithm pln_method = Parameters.PlanningAlgorithm.PSO;
+			Parameters.SchedulingAlgorithm sch_method = Parameters.SchedulingAlgorithm.STATIC;
+			Parameters.PlanningAlgorithm pln_method = Parameters.PlanningAlgorithm.PCH;
 			ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.LOCAL;
 
 			/**

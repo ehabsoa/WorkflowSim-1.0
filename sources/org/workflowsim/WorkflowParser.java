@@ -277,7 +277,7 @@ public class WorkflowParser {
                             } else {
                                 Log.printLine("Parsing Error");
                             }
-                            org.cloudbus.cloudsim.File tFile;
+							org.cloudbus.cloudsim.File tFile;
                             /*
                              * Already exists an input file (forget output file)
                              */

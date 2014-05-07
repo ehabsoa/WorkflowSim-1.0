@@ -23,6 +23,8 @@ package org.workflowsim;
  * @date Apr 9, 2013
  */
 public class WorkflowSimTags {
+	
+	public final static Double EPSILON = 0.00001;
 
 	/**
 	 * Starting constant value for cloud-related tags *
@@ -44,7 +46,7 @@ public class WorkflowSimTags {
 	public static final int JOB_SUBMIT = BASE + 1;
 	public static final int CLOUDLET_UPDATE = BASE + 5;
 	public static final int CLOUDLET_CHECK = BASE + 6;
-	public static final int WORKFLOW_PLANNER = BASE + 7;
+	public static final int WORKFLOW_PLANNER_SUBMIT = BASE + 7;
 
 	/**
 	 * Private Constructor

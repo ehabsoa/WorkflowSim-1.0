@@ -252,7 +252,7 @@ public final class ClusteringEngine extends SimEntity {
 		 * of this job to be getJobList().size() is so that the job id is the
 		 * next available id
 		 */
-		Job job = new Job(getJobList().size(), 110);
+		Job stageInJob = new Job(getJobList().size(), 110);
 
 		/**
 		 * This is a very simple implementation of stage-in job, in which we Add
@@ -272,20 +272,20 @@ public final class ClusteringEngine extends SimEntity {
 				fileList.add(file);
 			}
 		}
-		job.setFileList(fileList);
-		job.setClassType(ClassType.STAGE_IN.value);
+		stageInJob.setFileList(fileList);
+		stageInJob.setClassType(ClassType.STAGE_IN.value);
 
 		/**
 		 * stage-in is always first level job
 		 */
-		job.setDepth(0);
-		job.setPriority(0);
+		stageInJob.setDepth(0);
+		stageInJob.setPriority(0);
 
 		/**
 		 * A very simple strategy if you have multiple schedulers and
 		 * sub-workflows just use the first scheduler
 		 */
-		job.setUserId(getWorkflowEngine().getSchedulerId(0));
+		stageInJob.setUserId(getWorkflowEngine().getSchedulerId(0));
 
 		/**
 		 * add stage-in job
@@ -296,12 +296,12 @@ public final class ClusteringEngine extends SimEntity {
 			 * first level jobs
 			 */
 			if (cJob.getParentList().isEmpty()) {
-				cJob.addParent(job);
-				job.addChild(cJob);
+				cJob.addParent(stageInJob);
+				stageInJob.addChild(cJob);
 			}
 
 		}
-		getJobList().add(job);
+		getJobList().add(stageInJob);
 
 		/**
 		 * In the future, we will add stage-out job
@@ -340,8 +340,8 @@ public final class ClusteringEngine extends SimEntity {
 			sendNow(this.workflowEngineId, WorkflowSimTags.JOB_SUBMIT,
 					getJobList());
 			break;
-		case WorkflowSimTags.WORKFLOW_PLANNER:
-			sendNow(this.workflowEngineId, WorkflowSimTags.WORKFLOW_PLANNER, ev.getData());
+		case WorkflowSimTags.WORKFLOW_PLANNER_SUBMIT:
+			sendNow(this.workflowEngineId, WorkflowSimTags.WORKFLOW_PLANNER_SUBMIT, ev.getData());
 			break;
 		case CloudSimTags.END_OF_SIMULATION:
 			shutdownEntity();

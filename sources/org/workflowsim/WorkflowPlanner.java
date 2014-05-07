@@ -25,6 +25,7 @@ import org.cloudbus.cloudsim.core.SimEvent;
 import org.workflowsim.planning.BasePlanningAlgorithm;
 import org.workflowsim.planning.DHEFTPlanningAlgorithm;
 import org.workflowsim.planning.HEFTPlanningAlgorithm;
+import org.workflowsim.planning.PCHPlanningAlgorithm;
 import org.workflowsim.planning.PSOPlanningAlgorithm;
 import org.workflowsim.planning.RandomPlanningAlgorithm;
 import org.workflowsim.planning.RoundRobinPlanningAlgorithm;
@@ -179,7 +180,7 @@ public class WorkflowPlanner extends SimEntity {
 			e.printStackTrace();
 		}
 
-		sendNow(getClusteringEngineId(), WorkflowSimTags.WORKFLOW_PLANNER,
+		sendNow(getClusteringEngineId(), WorkflowSimTags.WORKFLOW_PLANNER_SUBMIT,
 				planner);
 	}
 
@@ -214,6 +215,9 @@ public class WorkflowPlanner extends SimEntity {
 			break;
 		case PSO:
 			planner = new PSOPlanningAlgorithm();
+			break;
+		case PCH:
+			planner = new PCHPlanningAlgorithm();
 			break;
 		default:
 			planner = null;

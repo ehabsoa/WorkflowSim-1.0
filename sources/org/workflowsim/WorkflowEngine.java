@@ -179,7 +179,7 @@ public class WorkflowEngine extends SimEntity {
 		case WorkflowSimTags.JOB_SUBMIT:
 			processJobSubmit(ev);
 			break;
-		case WorkflowSimTags.WORKFLOW_PLANNER:
+		case WorkflowSimTags.WORKFLOW_PLANNER_SUBMIT:
 			processWorkflowPlanner(ev);
 			break;
 		// other unknown tags are processed by this method
@@ -190,7 +190,7 @@ public class WorkflowEngine extends SimEntity {
 	}
 
 	private void processWorkflowPlanner(SimEvent ev) {
-		sendNow(getSchedulerId(0), WorkflowSimTags.WORKFLOW_PLANNER, ev.getData());
+		sendNow(getSchedulerId(0), WorkflowSimTags.WORKFLOW_PLANNER_SUBMIT, ev.getData());
 	}
 
 	/**
