@@ -211,18 +211,18 @@ public class File {
 	}
 
 	/**
-	 * Gets the file size (in bytes)
+	 * Gets the file size (in MBytes)
 	 * 
-	 * @return the file size (in bytes)
+	 * @return the file size (in MBytes)
 	 */
-	public int getSizeInByte() {
-		return attribute.getFileSizeInByte();
+	public int getSizeInMByte() {
+		return attribute.getFileSizeInMByte();
 	}
 
 	/**
-	 * Sets the file size (in MBytes)
+	 * Sets the file size (in bytes)
 	 * 
-	 * @param fileSize the file size (in MBytes)
+	 * @param fileSize the file size (in bytes)
 	 * @return <tt>true</tt> if successful, <tt>false</tt> otherwise
 	 */
 	public boolean setFileSize(int fileSize) {

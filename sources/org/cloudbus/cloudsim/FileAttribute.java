@@ -223,21 +223,21 @@ public class FileAttribute {
 	}
 
 	/**
-	 * Gets the file size (in MBytes)
+	 * Gets the file size (in bytes)
 	 * 
-	 * @return the file size (in MBytes)
+	 * @return the file size (in bytes)
 	 */
 	public int getFileSize() {
 		return size;
 	}
 
 	/**
-	 * Gets the file size (in bytes)
+	 * Gets the file size (in MBytes)
 	 * 
-	 * @return the file size (in bytes)
+	 * @return the file size (in MBytes)
 	 */
-	public int getFileSizeInByte() {
-		return size * Consts.MILLION;   // 1e6
+	public int getFileSizeInMByte() {
+		return size / Consts.MILLION;   // 1e6
 		// return size * 1048576; // 1e6 - more accurate
 	}
 

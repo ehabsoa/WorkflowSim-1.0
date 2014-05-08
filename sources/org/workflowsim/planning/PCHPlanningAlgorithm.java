@@ -11,6 +11,7 @@ import java.util.PriorityQueue;
 import java.util.Stack;
 import java.util.Vector;
 
+import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.File;
 import org.cloudbus.cloudsim.Vm;
 import org.workflowsim.CondorVM;
@@ -230,7 +231,9 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 	private double getCommunicationCost(Task parent, Vm j, Task child, Vm k) {
 		double bytes = 0.0;
 		double bandwith = 0.0;
+		@SuppressWarnings("unchecked")
 		List<File> parentFiles = (List<File>) parent.getFileList();
+		@SuppressWarnings("unchecked")
 		List<File> childFiles = (List<File>) child.getFileList();
 
 		if ((j == null || k == null))
@@ -254,6 +257,12 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 			}
 		}
 
+		// Mbps in bps
+		bandwith *= (double) Consts.MILLION;
+		//bps in Bps, because size of the files is in bytes
+		bandwith /= 8;
+		
+		//answer in time
 		return bytes / bandwith;
 	}
 
