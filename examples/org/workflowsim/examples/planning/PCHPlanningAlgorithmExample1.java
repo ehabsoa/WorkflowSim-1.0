@@ -71,7 +71,7 @@ public class PCHPlanningAlgorithmExample1 extends WorkflowSimBasicExample1 {
 			/**
 			 * Should change this based on real physical path
 			 */
-			String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/Montage_25.xml";
+			String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/HEFT_paper.xml";
 
 			File daxFile = new File(daxPath);
 			if (!daxFile.exists()) {
@@ -80,7 +80,7 @@ public class PCHPlanningAlgorithmExample1 extends WorkflowSimBasicExample1 {
 			}
 
 			/**
-			 * Since we are using HEFT planning algorithm, the scheduling
+			 * Since we are using PCH planning algorithm, the scheduling
 			 * algorithm should be static such that the scheduler would not
 			 * override the result of the planner
 			 */

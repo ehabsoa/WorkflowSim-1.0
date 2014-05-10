@@ -18,6 +18,7 @@ import org.workflowsim.CondorVM;
 import org.workflowsim.Task;
 import org.workflowsim.WorkflowSimTags;
 import org.workflowsim.utils.Parameters;
+import org.workflowsim.utils.Parameters.PlanningAlgorithm;
 
 public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 
@@ -38,7 +39,7 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 
 	}
 
-	List<CondorVM> privateVms;
+	List<CondorVM> availableVms;
 
 	Map<Task, Double> EST;
 
@@ -62,7 +63,15 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 
 	Map<Integer, CondorVM> mId2Vm;
 
+	private PlanningAlgorithm usedByOther;
+
+	public PCHPlanningAlgorithm(PlanningAlgorithm name) {
+		this();
+		usedByOther = name;
+	}
+
 	public PCHPlanningAlgorithm() {
+		usedByOther = PlanningAlgorithm.PCH;
 		EST = new HashMap<Task, Double>();
 		EFT = new HashMap<Task, Double>();
 		P = new HashMap<Task, Double>();
@@ -87,7 +96,7 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 	}
 
 	private void resetCounter() {
-		for (Vm vm : privateVms)
+		for (Vm vm : availableVms)
 			resetCounter(vm);
 	}
 
@@ -108,7 +117,7 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 	}
 
 	public double getMakespan() {
-		double max = Double.MIN_VALUE;
+		double max = 0;
 		double time = 0.0;
 
 		for (Task exit : exitTasks) {
@@ -116,7 +125,8 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 			if (time > max)
 				max = time;
 		}
-		return max;
+
+		return max <= 0 ? Double.MAX_VALUE : max;
 	}
 
 	/*
@@ -126,7 +136,7 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 
 		double mips = Double.MIN_VALUE;
 		Vm best = null;
-		for (Vm vm : this.privateVms)
+		for (Vm vm : this.availableVms)
 			if (vm.getMips() > mips) {
 				best = vm;
 				mips = vm.getMips();
@@ -142,7 +152,7 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 		double max = Double.MIN_VALUE;
 		double bandwidth = 0.0;
 
-		for (Vm vm : this.privateVms) {
+		for (Vm vm : this.availableVms) {
 			bandwidth = vm.getBw();
 			max = Math.max(bandwidth, max);
 		}
@@ -259,10 +269,10 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 
 		// Mbps in bps
 		bandwith *= (double) Consts.MILLION;
-		//bps in Bps, because size of the files is in bytes
+		// bps in Bps, because size of the files is in bytes
 		bandwith /= 8;
-		
-		//answer in time
+
+		// answer in time
 		return bytes / bandwith;
 	}
 
@@ -375,7 +385,7 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 
 		double EFTlastClusterTask = 0.0;
 
-		for (Vm vm : privateVms) {
+		for (Vm vm : availableVms) {
 			resetCounter(vm);
 			double ESTsucessorLastClusterNode = Double.NEGATIVE_INFINITY;
 
@@ -443,7 +453,10 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 
 	private void printPriorities() {
 		System.out.println("Priorities: ");
-		for (Object o : getTaskList()) {
+		List<Task> cp = new ArrayList<Task>(getTaskList());
+		Collections.sort(cp, new TaskComparator());
+
+		for (Object o : cp) {
 			Task t = (Task) o;
 			System.out.println(t + "=> P:" + this.P.get(t));
 		}
@@ -502,22 +515,30 @@ public class PCHPlanningAlgorithm extends BasePlanningAlgorithm {
 	@Override
 	public void run() throws Exception {
 		System.out.println("\n---Begin PCH---\n");
-		this.privateVms = new ArrayList<CondorVM>();
+		this.availableVms = new ArrayList<CondorVM>();
 
-		/*
-		 * get private cloud only!
-		 */
-		for (Object o : getVmList()) {
-			CondorVM v = (CondorVM) o;
-			if (v.getPrice() < WorkflowSimTags.EPSILON)
-				this.privateVms.add(v);
+		switch (usedByOther) {
+		case HCOC:
+			/*
+			 * get private cloud only!
+			 */
+			for (Object o : getVmList()) {
+				CondorVM v = (CondorVM) o;
+				if (v.getPrice() < WorkflowSimTags.EPSILON)
+					this.availableVms.add(v);
+			}
+
+			/*
+			 * if hybrid cloud = public cloud only
+			 */
+			if (this.availableVms.size() <= 0)
+				return;
+			break;
+
+		default:
+			this.availableVms.addAll(getVmList());
+			break;
 		}
-
-		/*
-		 * hybrid cloud = public cloud only
-		 */
-		if (this.privateVms.size() <= 0)
-			return;
 
 		for (Object objectTask : getTaskList()) {
 			Task task = (Task) objectTask;

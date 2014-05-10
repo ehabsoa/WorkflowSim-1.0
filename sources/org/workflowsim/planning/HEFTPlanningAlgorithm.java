@@ -30,7 +30,7 @@ import org.workflowsim.utils.Parameters;
 /**
  * The HEFT planning algorithm.
  * 
- * @author Pedro Paulo Vezz�� Campos
+ * @author Pedro Paulo Vezzá Campos
  * @date Oct 12, 2013
  */
 public class HEFTPlanningAlgorithm extends BasePlanningAlgorithm {

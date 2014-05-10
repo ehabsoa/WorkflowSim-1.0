@@ -35,7 +35,7 @@ import org.workflowsim.scheduling.FCFSSchedulingAlgorithm;
 import org.workflowsim.scheduling.MCTSchedulingAlgorithm;
 import org.workflowsim.scheduling.MaxMinSchedulingAlgorithm;
 import org.workflowsim.scheduling.MinMinSchedulingAlgorithm;
-import org.workflowsim.scheduling.PSOSSchedulingAlgorithm;
+import org.workflowsim.scheduling.PSOSchedulingAlgorithm;
 import org.workflowsim.scheduling.StaticSchedulingAlgorithm;
 import org.workflowsim.utils.Parameters;
 import org.workflowsim.utils.Parameters.SchedulingAlgorithm;
@@ -183,7 +183,7 @@ public class WorkflowScheduler extends DatacenterBroker {
 			algorithm = new StaticSchedulingAlgorithm();
 			break;
 		case PSO:
-			algorithm = new PSOSSchedulingAlgorithm(planner);
+			algorithm = new PSOSchedulingAlgorithm(planner);
 			break;
 		default:
 			algorithm = new StaticSchedulingAlgorithm();

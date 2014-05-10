@@ -24,6 +24,7 @@ import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 import org.workflowsim.planning.BasePlanningAlgorithm;
 import org.workflowsim.planning.DHEFTPlanningAlgorithm;
+import org.workflowsim.planning.HCOCPlanningAlgorithm;
 import org.workflowsim.planning.HEFTPlanningAlgorithm;
 import org.workflowsim.planning.PCHPlanningAlgorithm;
 import org.workflowsim.planning.PSOPlanningAlgorithm;
@@ -218,6 +219,9 @@ public class WorkflowPlanner extends SimEntity {
 			break;
 		case PCH:
 			planner = new PCHPlanningAlgorithm();
+			break;
+		case HCOC:
+			planner = new HCOCPlanningAlgorithm(Parameters.getDeadline());
 			break;
 		default:
 			planner = null;

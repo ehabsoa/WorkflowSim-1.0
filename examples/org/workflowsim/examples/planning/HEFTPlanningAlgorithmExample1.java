@@ -20,6 +20,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+
 import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -45,33 +46,36 @@ import org.workflowsim.utils.ReplicaCatalog;
  */
 public class HEFTPlanningAlgorithmExample1 extends WorkflowSimBasicExample1{
 
-    ////////////////////////// STATIC METHODS ///////////////////////
-    protected static List<CondorVM> createVM(int userId, int vms) {
+	// //////////////////////// STATIC METHODS ///////////////////////
+	protected static List<CondorVM> createVM(int userId, int vms) {
 
-        //Creates a container to store VMs. This list is passed to the broker later
-        LinkedList<CondorVM> list = new LinkedList<CondorVM>();
+		// Creates a container to store VMs. This list is passed to the broker
+		// later
+		LinkedList<CondorVM> list = new LinkedList<CondorVM>();
 
-        //VM Parameters
-        long size = 10000; //image size (MB)
-        int ram = 512; //vm memory (MB)
-        int mips = 1000;
-        long bw = 1000;
-        int pesNumber = 1; //number of cpus
-        String vmm = "Xen"; //VMM name
+		// VM Parameters
+		long size = 10000; // image size (MB)
+		int ram = 512; // vm memory (MB)
+		int mips = 1000;
+		long bw = 1000;
+		int pesNumber = 1; // number of cpus
+		String vmm = "Xen"; // VMM name
 
-        //create VMs
-        CondorVM[] vm = new CondorVM[vms];
+		// create VMs
+		CondorVM[] vm = new CondorVM[vms];
 
-        Random bwRandom = new Random(System.currentTimeMillis());
+		Random bwRandom = new Random(System.currentTimeMillis());
 
-        for (int i = 0; i < vms; i++) {
-            double ratio = bwRandom.nextDouble();
-            vm[i] = new CondorVM(i, userId, mips * ratio, pesNumber, ram, (long) (bw * ratio), size, vmm, new CloudletSchedulerSpaceShared());
-            list.add(vm[i]);
-        }
+		for (int i = 0; i < vms; i++) {
+			double ratio = bwRandom.nextDouble();
+			vm[i] = new CondorVM(i, userId, mips/* * ratio*/, pesNumber, ram,
+					(long) (bw /* * ratio*/), size, vmm,
+					new CloudletSchedulerSpaceShared());
+			list.add(vm[i]);
+		}
 
-        return list;
-    }
+		return list;
+	}
 
     /**
      * Creates main() to run this example This example has only one datacenter
@@ -92,7 +96,7 @@ public class HEFTPlanningAlgorithmExample1 extends WorkflowSimBasicExample1{
             /**
              * Should change this based on real physical path
              */
-            String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/Montage_100.xml";
+            String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/HEFT_paper.xml";
             
             File daxFile = new File(daxPath);
             if(!daxFile.exists()){

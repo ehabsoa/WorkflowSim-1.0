@@ -4,20 +4,31 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Vm;
 import org.workflowsim.CondorVM;
 import org.workflowsim.Task;
+import org.workflowsim.utils.Parameters.PlanningAlgorithm;
 
 public class HCOCPlanningAlgorithm extends BasePlanningAlgorithm {
 
 	private double deadline;
 	private PCHPlanningAlgorithm pch;
+	private List<CondorVM> R;
 	private List<CondorVM> publicVms;
 
 	public HCOCPlanningAlgorithm(double deadline) {
+
+		if (deadline <= 0) {
+			Log.printLine("HCOCPlanningAlgorithm: The value of the deadline can not be <= 0");
+			throw new IllegalArgumentException(
+					"The value of the deadline can not be <= 0");
+		}
+
 		this.deadline = deadline;
-		pch = new PCHPlanningAlgorithm();
+		pch = new PCHPlanningAlgorithm(PlanningAlgorithm.HCOC);
 		publicVms = new ArrayList<CondorVM>();
+		R = new ArrayList<CondorVM>();
 	}
 
 	@Override
@@ -26,27 +37,15 @@ public class HCOCPlanningAlgorithm extends BasePlanningAlgorithm {
 		pch.setTaskList(getTaskList());
 		pch.setVmList(getVmList());
 		pch.run();
+		R = pch.availableVms;
+		boolean fulfilled = false;
 
 		double makespan = pch.getMakespan();
 
-		if (makespan <= this.deadline)
+		if (makespan <= this.deadline) {
+			Log.printLine("Deadline fulfilled by PCH");
 			return;
-
-		boolean fulfilled = hcoc(makespan);
-		makespan = pch.getMakespan();
-
-		System.out.println("Makespan: " + makespan);
-		System.out.println("HCOC was able to schedule the DAG:" + fulfilled);
-
-		System.out.println("\n---END HCOC---\n");
-
-	}
-
-	private boolean hcoc(double makespan) {
-		int iteration = 0, numberOfClusters = 0;
-		List<Task> T = new ArrayList<Task>();
-		List<CondorVM> R = pch.privateVms;
-		List<Vm> H = new ArrayList<Vm>();
+		}
 
 		for (Object o : getVmList()) {
 			CondorVM vm = (CondorVM) o;
@@ -56,6 +55,25 @@ public class HCOCPlanningAlgorithm extends BasePlanningAlgorithm {
 			}
 		}
 
+		if (publicVms.isEmpty()) {
+			Log.printLine("Public cloud set is empty");
+			return;
+		}
+
+		fulfilled = hcoc(makespan);
+		makespan = pch.getMakespan();
+
+		Log.printLine("Makespan: " + makespan);
+		Log.printLine("HCOC was able to schedule the DAG:" + fulfilled);
+
+		Log.printLine("\n---END HCOC---\n");
+
+	}
+
+	private boolean hcoc(double makespan) {
+		int iteration = 0, numberOfClusters = 0;
+		List<Task> T = new ArrayList<Task>();
+		List<Vm> H = new ArrayList<Vm>();
 		List<Task> tasks = pch.getDagSortedByPriority();
 
 		/*

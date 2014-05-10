@@ -20,7 +20,8 @@ import org.workflowsim.utils.OverheadParameters;
 import org.workflowsim.utils.Parameters;
 import org.workflowsim.utils.ReplicaCatalog;
 
-public class PSOPlanningAlgorithmExample1 extends WorkflowSimBasicExample1 {
+public class HCOCPlanningAlgorithmExample1 extends WorkflowSimBasicExample1 {
+
 	// //////////////////////// STATIC METHODS ///////////////////////
 	protected static List<CondorVM> createVM(int userId, int vms) {
 
@@ -43,14 +44,19 @@ public class PSOPlanningAlgorithmExample1 extends WorkflowSimBasicExample1 {
 
 		for (int i = 0; i < vms; i++) {
 			double ratio = bwRandom.nextDouble();
-			vm[i] = new CondorVM(i, userId, mips/* * ratio*/, pesNumber, ram,
-					(long) (bw /* * ratio*/), size, vmm,
+			vm[i] = new CondorVM(i, userId, mips/* * ratio */, pesNumber, ram,
+					(long) (bw /* * ratio */), size, vmm,
 					new CloudletSchedulerSpaceShared());
 			list.add(vm[i]);
+			vm[i].setPrice(ratio * 10);
 		}
+		
+		//vm[0].setPrice(0);
+		//vm[1].setPrice(0);
 
 		return list;
 	}
+
 	/**
 	 * Creates main() to run this example This example has only one datacenter
 	 * and one storage
@@ -69,7 +75,7 @@ public class PSOPlanningAlgorithmExample1 extends WorkflowSimBasicExample1 {
 			/**
 			 * Should change this based on real physical path
 			 */
-			String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/Montage_25.xml";
+			String daxPath = "/Users/thiagogenez/Documents/git/github/WorkflowSim-1.0/config/dax/HEFT_paper.xml";
 
 			File daxFile = new File(daxPath);
 			if (!daxFile.exists()) {
@@ -78,12 +84,17 @@ public class PSOPlanningAlgorithmExample1 extends WorkflowSimBasicExample1 {
 			}
 
 			/**
-			 * Since we are using HEFT planning algorithm, the scheduling
+			 * Deadline value
+			 * */
+			long deadline = 50;
+
+			/**
+			 * Since we are using HCOC planning algorithm, the scheduling
 			 * algorithm should be static such that the scheduler would not
 			 * override the result of the planner
 			 */
 			Parameters.SchedulingAlgorithm sch_method = Parameters.SchedulingAlgorithm.STATIC;
-			Parameters.PlanningAlgorithm pln_method = Parameters.PlanningAlgorithm.PSO;
+			Parameters.PlanningAlgorithm pln_method = Parameters.PlanningAlgorithm.HCOC;
 			ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.LOCAL;
 
 			/**
@@ -104,7 +115,7 @@ public class PSOPlanningAlgorithmExample1 extends WorkflowSimBasicExample1 {
 			 * Initialize static parameters
 			 */
 			Parameters.init(vmNum, daxPath, null, null, op, cp, sch_method,
-					pln_method, null, 0);
+					pln_method, null, deadline);
 			ReplicaCatalog.init(file_system);
 
 			// before creating any entities.
